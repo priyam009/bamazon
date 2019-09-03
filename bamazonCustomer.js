@@ -18,53 +18,73 @@ connection.connect(function(err) {
 
   // readProducts();
   start();
-
 });
 
 //READS DATA IN THE DATABASE
 function readProducts(response) {
   console.log("Selecting all products.... \n");
-  
-  var query = "SELECT * FROM products WHERE ?"
-  
-  connection.query(query, {item_id: response.id} ,function(err, res) {
+
+  var query = "SELECT products.stock_quantity FROM products WHERE ?";
+
+  connection.query(query, { item_id: response.id }, function(err, res) {
     if (err) throw err;
-    
-    console.table(res);
-    connection.end();
+
+    qty = res[0].stock_quantity
+    console.log("QTY",qty);
+    console.log("response.quantity", response.quantity);
+    updateProducts(qty, response.quantity, response.id);
   });
+}
+
+function updateProducts(qty, quantity, id) {
+  if (qty > quantity) {
+    qty -= quantity;
+
+    var updatedQuery = "UPDATE products SET ? WHERE ?";
+
+    connection.query(
+      updatedQuery,
+      [{ stock_quantity: qty }, { item_id: id }],
+      function(err, res) {
+        if (err) throw err;
+        console.log(res.affectedRows + " products updated!\n");
+      }
+    );
+  }
+  connection.end();
 }
 
 //INQUIRER ASKS FOR INFORMATION- ID AND QTY FROM THE USER
 function start() {
-  inquirer.prompt([
-    {
-      type: "input",
-      name: "id",
-      message: "Enter the id of the product to buy: ",
-      validate: function(value) {
-        if (!isNaN(value)) {
-          return true;
-        } else {
-          return false;
+  inquirer
+    .prompt([
+      {
+        type: "input",
+        name: "id",
+        message: "Enter the id of the product to buy: ",
+        validate: function(value) {
+          if (!isNaN(value)) {
+            return true;
+          } else {
+            return false;
+          }
+        }
+      },
+      {
+        type: "input",
+        name: "quantity",
+        message: "Enter the quantity of the product to buy: ",
+        validate: function(value) {
+          if (!isNaN(value)) {
+            return true;
+          } else {
+            return false;
+          }
         }
       }
-    },
-    {
-      type: "input",
-      name: "quantity",
-      message: "Enter the quantity of the product to buy: ",
-      validate: function(value) {
-        if (!isNaN(value)) {
-          return true;
-        } else {
-          return false;
-        }
-      }
-    }
-  ])
-  .then(function(response) {
-    console.log(response);
-    readProducts(response);
-  })
+    ])
+    .then(function(response) {
+      console.log(response);
+      readProducts(response);
+    });
 }
