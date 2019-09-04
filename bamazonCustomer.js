@@ -29,30 +29,36 @@ function readProducts(response) {
   connection.query(query, { item_id: response.id }, function(err, res) {
     if (err) throw err;
 
-    qty = res[0].stock_quantity
-    console.log("QTY",qty);
-    console.log("response.quantity", response.quantity);
-    updateProducts(qty, response.quantity, response.id);
+    var stockQuantity = res[0].stock_quantity
+
+    updateProducts(stockQuantity, response);
   });
 }
 
-function updateProducts(qty, quantity, id) {
-  if (qty > quantity) {
-    qty -= quantity;
+//PRODUCT UPDATED AS PER THE ORDER IF THE ORDER GOES THROUGH
+function updateProducts(stockQuantity, response) {
+  if (stockQuantity > response.quantity) {
+    stockQuantity -= response.quantity;
 
     var updatedQuery = "UPDATE products SET ? WHERE ?";
 
     connection.query(
       updatedQuery,
-      [{ stock_quantity: qty }, { item_id: id }],
+      [{ stock_quantity: stockQuantity }, { item_id: response.id }],
       function(err, res) {
         if (err) throw err;
         console.log(res.affectedRows + " products updated!\n");
       }
     );
+
+  } else {
+    console.log("\n" + "Sorry, Insufficient Quantity." + "\n" + "Order cannot be processed. \n");
   }
   connection.end();
 }
+
+//FUNCTION TO SHOW THE TOTAL COST OF PURCHASE TO THE CUSTOMER
+
 
 //INQUIRER ASKS FOR INFORMATION- ID AND QTY FROM THE USER
 function start() {
