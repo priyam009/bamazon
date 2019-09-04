@@ -2,7 +2,7 @@ var inquirer = require("inquirer");
 var mysql = require("mysql");
 var chalk = require("chalk");
 
-//CREATING CONNECTION
+//Creating connection
 var connection = mysql.createConnection({
   host: "localhost",
   post: 3306,
@@ -11,17 +11,17 @@ var connection = mysql.createConnection({
   database: "bamazon"
 });
 
-//CHECKING CONNECTION
+//Checking connection
 connection.connect(function(err) {
   if (err) throw err;
 
   console.log("\n" + chalk.green("connected as id " + connection.threadId) + "\n");
 
-  //ASK FOR CUSTOMER INPUT USING INQUIRER
+  //Ask customer input using inquirer
   start();
 });
 
-//INQUIRER ASKS FOR INFORMATION- ID AND QTY FROM THE USER
+//Inquiere asks for information- ID and QTY from the customer
 function start() {
   inquirer
   .prompt([
@@ -29,7 +29,7 @@ function start() {
       type: "input",
       name: "id",
       message: "Enter the id of the product to buy: ",
-      //CHECK IF THE VALUE IS A NUMBER
+      //Check if the entered value is a number
       validate: function(value) {
         if (!isNaN(value)) {
           return true;
@@ -42,7 +42,7 @@ function start() {
       type: "input",
       name: "quantity",
       message: "Enter the quantity of the product to buy: ",
-      //CHECK IF THE VALUE IS A NUMBER
+      //Check if the entered value is a number
       validate: function(value) {
         if (!isNaN(value)) {
           return true;
@@ -53,12 +53,12 @@ function start() {
     }
   ])
   .then(function(response) {
-    //CALL TO READ PRODUCT DATA FROM THE DATABASE 
+    //Call to read product data from the database 
     readProducts(response);
   });
 }
 
-//READS DATA IN THE DATABASE
+//Reads data from the database
 function readProducts(response) {
   console.log(chalk.blue.bold("\n" + "Selecting relevant product....") + "\n");
 
@@ -67,16 +67,16 @@ function readProducts(response) {
   connection.query(query, { item_id: response.id }, function(err, res) {
     if (err) throw err;
 
-    //CALL TO CHECK AND UPDATE THE STOCK QUANTITY IN THE DATABASE
+    //Call to check and update the stock quantity in the database
     updateProducts(res[0].stock_quantity, response);
 
   });
 }
 
-//PRODUCT QUANTITY UPDATED AS PER THE ORDER IF THE ORDER GOES THROUGH
+//Product quantity updated as per the order if the order goes through
 function updateProducts(stockQuantity, response) {
 
-  //CHECK IF THE ORDERED QUANTITY IS LESS THAN THE AVAILABLE QUANTITY
+  //Check if the ordered quantity is less than the available quantity
   if (stockQuantity > response.quantity) {
     stockQuantity -= response.quantity;
 
@@ -90,21 +90,21 @@ function updateProducts(stockQuantity, response) {
 
         console.log(chalk.blue.bold(res.affectedRows + " product updated!") + "\n");
 
-        //CALL TO SHOW THE TOTAL COST OF PURCHASE
+        //Call to show the total cost of purchase
         purchasedProducts(response);
       }
     );
 
   } else {
-    //IF THERE IS NOT SUFFICIENT QUANTITY IN THE STORE
+    //Show is theres is not sufficient quantity in the store
     console.log(chalk.red("\n" + "Sorry, Insufficient Quantity." + "\n" + "Order cannot be processed." + "\n"));
 
-    //END CONNECTION
+    //End connection
     connection.end();
   }
 }
 
-//FUNCTION TO SHOW THE TOTAL COST OF PURCHASE TO THE CUSTOMER
+//Function to show the total cost of purchase to the customer
 function purchasedProducts(response) {
   var purchasedQuery = "SELECT * FROM products WHERE ?"
 
@@ -114,5 +114,7 @@ function purchasedProducts(response) {
 
       console.log(chalk.green.inverse.bold("Total cost of purchase: $" + customerCost + "\n"));
     })
+  
+  //End connection
   connection.end();
 }
