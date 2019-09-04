@@ -113,52 +113,138 @@ function addInventory() {
     });
 }
 
+//Update current inventory to new stock level
 function updateInventory() {
   inquirer
-  .prompt([
-    {
-      type: "input",
-      name: "id",
-      message: "Enter the product ID: ",
-      validate: function(value) {
-        if (!isNaN(value)) {
-          return true;
-        } else {
-          return false;
+    .prompt([
+      {
+        type: "input",
+        name: "id",
+        message: "Enter the product ID: ",
+        validate: function(value) {
+          if (!isNaN(value)) {
+            return true;
+          } else {
+            return false;
+          }
+        }
+      },
+      {
+        type: "input",
+        name: "qty",
+        message: "Enter the updated quantity: ",
+        validate: function(value) {
+          if (!isNaN(value)) {
+            return true;
+          } else {
+            return false;
+          }
         }
       }
-    },
-    {
-      type: "input",
-      name: "qty",
-      message: "Enter the updated quantity: ",
-      validate: function(value) {
-        if (!isNaN(value)) {
-          return true;
-        } else {
-          return false;
+    ])
+    .then(function(resp) {
+      var updateQuery =
+        "UPDATE products SET stock_quantity = stock_quantity + ? WHERE item_id = ?";
+
+      connection.query(
+        updateQuery,
+        [resp.qty, resp.id],
+
+        function(err, res) {
+          if (err) throw err;
+
+          console.log(
+            chalk.blue.bold(res.affectedRows + " product updated!") + "\n"
+          );
+          addInventory();
         }
-      }
-    }
-  ])
-  .then(function(resp) {
-    var updateQuery = "UPDATE products SET stock_quantity = stock_quantity + ? WHERE item_id = ?";
-
-    connection.query(
-      updateQuery,[resp.qty, resp.id],
-
-      function(err, res) {
-        if (err) throw err;
-
-        console.log(
-          chalk.blue.bold(res.affectedRows + " product updated!") +
-            "\n"
-        );
-        addInventory();
-      }
-    );
-  });
+      );
+    });
 }
 
-//TODO Function to add new item in the stock list
-function addProduct() {}
+//Function to add new item in the stock list
+function addProduct() {
+  inquirer
+    .prompt({
+      type: "list",
+      name: "add",
+      message: "Select from the following: ",
+      choices: ["Add New Product", "Exit"]
+    })
+    .then(function(response) {
+      switch (response.add) {
+        case "Add New Product":
+            newProduct();
+          break;
+
+        case "Exit":
+          connection.end();
+          break;
+      }
+    });
+}
+
+//Add new Item
+function newProduct() {
+  inquirer
+    .prompt([
+      {
+        type: "input",
+        name: "name",
+        message: "Enter the Product Name: "
+      },
+      {
+        type: "input",
+        name: "dept",
+        message: "Enter the Product Department: "
+      },
+      {
+        type: "input",
+        name: "price",
+        message: "Enter the Product Price: ",
+        validate: function(value) {
+          if (!isNaN(value)) {
+            return true;
+          } else {
+            return false;
+          }
+        }
+      },
+      {
+        type: "input",
+        name: "qty",
+        message: "Enter the Product Stock Quantity: ",
+        validate: function(value) {
+          if (!isNaN(value)) {
+            return true;
+          } else {
+            return false;
+          }
+        }
+      }
+    ])
+    .then(function(resp) {
+
+      console.log("Inserting a new product...\n");
+      var addProductQuery = "INSERT INTO products SET ?";
+
+      connection.query(
+        addProductQuery,
+        {
+          product_name: resp.name,
+          department_name: resp.dept,
+          price: resp.price,
+          stock_quantity: resp.qty
+        },
+        function(err, res) {
+          if (err) throw err;
+
+          console.log(
+            chalk.blue.bold(res.affectedRows + " product updated!") + "\n"
+          );
+
+          addProduct();
+        }
+      );
+    });
+}
