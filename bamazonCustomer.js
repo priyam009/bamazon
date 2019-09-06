@@ -15,7 +15,9 @@ var connection = mysql.createConnection({
 connection.connect(function(err) {
   if (err) throw err;
 
-  console.log("\n" + chalk.green("connected as id " + connection.threadId) + "\n");
+  console.log(
+    "\n" + chalk.green("connected as id " + connection.threadId) + "\n"
+  );
 
   //Ask customer input using inquirer
   start();
@@ -24,38 +26,38 @@ connection.connect(function(err) {
 //Inquiere asks for information- ID and QTY from the customer
 function start() {
   inquirer
-  .prompt([
-    {
-      type: "input",
-      name: "id",
-      message: "Enter the id of the product to buy: ",
-      //Check if the entered value is a number
-      validate: function(value) {
-        if (!isNaN(value)) {
-          return true;
-        } else {
-          return false;
+    .prompt([
+      {
+        type: "input",
+        name: "id",
+        message: "Enter the id of the product to buy: ",
+        //Check if the entered value is a number
+        validate: function(value) {
+          if (!isNaN(value)) {
+            return true;
+          } else {
+            return false;
+          }
+        }
+      },
+      {
+        type: "input",
+        name: "quantity",
+        message: "Enter the quantity of the product to buy: ",
+        //Check if the entered value is a number
+        validate: function(value) {
+          if (!isNaN(value)) {
+            return true;
+          } else {
+            return false;
+          }
         }
       }
-    },
-    {
-      type: "input",
-      name: "quantity",
-      message: "Enter the quantity of the product to buy: ",
-      //Check if the entered value is a number
-      validate: function(value) {
-        if (!isNaN(value)) {
-          return true;
-        } else {
-          return false;
-        }
-      }
-    }
-  ])
-  .then(function(response) {
-    //Call to read product data from the database 
-    readProducts(response);
-  });
+    ])
+    .then(function(response) {
+      //Call to read product data from the database
+      readProducts(response);
+    });
 }
 
 //Reads data from the database
@@ -69,13 +71,11 @@ function readProducts(response) {
 
     //Call to check and update the stock quantity in the database
     updateProducts(res[0].stock_quantity, response);
-
   });
 }
 
 //Product quantity updated as per the order if the order goes through
 function updateProducts(stockQuantity, response) {
-
   //Check if the ordered quantity is less than the available quantity
   if (stockQuantity > response.quantity) {
     stockQuantity -= response.quantity;
@@ -88,16 +88,25 @@ function updateProducts(stockQuantity, response) {
       function(err, res) {
         if (err) throw err;
 
-        console.log(chalk.blue.bold(res.affectedRows + " product updated!") + "\n");
+        console.log(
+          chalk.blue.bold(res.affectedRows + " product updated!") + "\n"
+        );
 
         //Call to show the total cost of purchase
         purchasedProducts(response);
       }
     );
-
   } else {
     //Show is theres is not sufficient quantity in the store
-    console.log(chalk.red("\n" + "Sorry, Insufficient Quantity." + "\n" + "Order cannot be processed." + "\n"));
+    console.log(
+      chalk.red(
+        "\n" +
+          "Sorry, Insufficient Quantity." +
+          "\n" +
+          "Order cannot be processed." +
+          "\n"
+      )
+    );
 
     //End connection
     connection.end();
@@ -106,15 +115,29 @@ function updateProducts(stockQuantity, response) {
 
 //Function to show the total cost of purchase to the customer
 function purchasedProducts(response) {
-  var purchasedQuery = "SELECT * FROM products WHERE ?"
+  var purchasedQuery = "SELECT * FROM products WHERE ?";
 
-  connection.query(purchasedQuery, [{item_id: response.id}],
-    function(err, res) {
-      var customerCost = parseInt(response.quantity) * res[0].price;
+  connection.query(purchasedQuery, [{ item_id: response.id }], function( err, res) {
+    var customerCost = parseInt(response.quantity) * res[0].price;
 
-      console.log(chalk.green.inverse.bold("Total cost of purchase: $" + customerCost + "\n"));
-    })
+    //Call to update/add purchase to the product_sales column after customer purchase
+    productSales(customerCost, response);
+  });
+}
+
+//Function to update/add purchase to the product_sales column after customer purchase
+function productSales(customerCost, response) {
   
-  //End connection
-  connection.end();
+  var salesQuery = "UPDATE products SET product_sales= product_sales + ? WHERE ?";
+  
+  connection.query(salesQuery, [customerCost, {item_id: response.id}], function( err, res ) {
+    if (err) throw err;
+    
+    console.log(chalk.blue.bold("Purchase cost updated") + "\n");
+
+    console.log(chalk.green.inverse.bold("Total cost of purchase: $" + customerCost + "\n"));
+
+    //End connection
+    connection.end();
+  })
 }

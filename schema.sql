@@ -17,7 +17,7 @@ SELECT *
 FROM products;
 
 ALTER TABLE products
-ADD product_sales INT NULL;
+ADD product_sales INT DEFAULT 0 AFTER stock_quantity;
 
 CREATE TABLE departments (
   department_id INT NOT NULL AUTO_INCREMENT,

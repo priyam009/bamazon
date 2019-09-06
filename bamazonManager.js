@@ -77,7 +77,7 @@ function viewLowInventory() {
   console.log(chalk.blue.bold("Selecting all relevant products..." + "\n"));
 
   var viewLowInventoryQuery = "SELECT * FROM products ";
-  viewLowInventoryQuery += "WHERE stock_quantity <= 10";
+  viewLowInventoryQuery += "WHERE stock_quantity <= 5";
 
   connection.query(viewLowInventoryQuery, function(err, res) {
     if (err) throw err;
