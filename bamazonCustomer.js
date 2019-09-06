@@ -5,7 +5,7 @@ var chalk = require("chalk");
 //Creating connection
 var connection = mysql.createConnection({
   host: "localhost",
-  post: 3306,
+  port: 3306,
   user: "root",
   password: "pri",
   database: "bamazon"
