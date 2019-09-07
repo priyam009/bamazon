@@ -12,11 +12,13 @@ VALUES ("iphone X", "electronics", 1000, 8),
 
 
 INSERT INTO departments(department_name, over_head_costs)
-VALUES ("electronics", 100000),
-("books", 1300),
-("games", 2000),
-("kitchen", 10000),
-("DIY", 6000);
+VALUES ("electronics", 4000),
+("books", 100),
+("games", 100),
+("kitchen", 900),
+("DIY", 50),
+("shoes", 400),
+("movies", 40);
 
 
 SELECT * FROM products;
