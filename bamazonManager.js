@@ -102,7 +102,7 @@ function addInventory() {
     })
     .then(function(response) {
       switch (response.add) {
-        case "Enter ID":
+        case "Enter ID to select":
           updateInventory();
           break;
 

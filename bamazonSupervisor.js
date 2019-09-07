@@ -115,11 +115,12 @@ function newDepartment() {
           }
         }
 
-        console.log(isPresent);
-
         if (!isPresent) {
           addDepartment(resp);
-        } 
+        } else {
+          console.log("Department already exists. Try Again!");
+          newDepartment();
+        }
       });
     });
 }
