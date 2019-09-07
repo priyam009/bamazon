@@ -1,17 +1,6 @@
 var inquirer = require("inquirer");
 var mysql = require("mysql");
 var chalk = require("chalk");
-var Table = require("cli-table");
-
-var table = new Table({
-  head: [
-    "Department ID",
-    "Department Name",
-    "Over head Costs",
-    "Product Sales"
-  ],
-  colWidths: [25, 25, 25, 25]
-});
 
 var connection = mysql.createConnection({
   host: "localhost",
