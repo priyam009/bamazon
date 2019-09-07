@@ -98,7 +98,7 @@ function addInventory() {
       type: "list",
       name: "add",
       message: "Select from the following: ",
-      choices: ["Enter ID", "Exit"]
+      choices: ["Enter ID to select", "Exit"]
     })
     .then(function(response) {
       switch (response.add) {
